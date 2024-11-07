@@ -1,14 +1,70 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
 
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+model User {
+  id       Int     @id @default(autoincrement())
+  name     String
+  email    String  @unique
+  role     String
+  password String
+
+  courses      CourseEnrollment[]
+  instructions CourseInstructor[]
+}
+
+model Course {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  enrollments CourseEnrollment[]
+  instructors CourseInstructor[]
+  modules     Module[]
+}
+
+model Category {
+  id    Int     @id @default(autoincrement())
+  name  String
+  courses Course[]
+}
+
+model CourseEnrollment {
+  id        Int    @id @default(autoincrement())
+  userId    Int
+  courseId  Int
+  user      User   @relation(fields: [userId], references: [id])
+  course    Course @relation(fields: [courseId], references: [id])
+}
+
+model CourseInstructor {
+  id        Int    @id @default(autoincrement())
+  userId    Int
+  courseId  Int
+  user      User   @relation(fields: [userId], references: [id])
+  course    Course @relation(fields: [courseId], references: [id])
+}
+
+model Module {
+  id       Int     @id @default(autoincrement())
+  title    String
+  courseId Int
+  course   Course  @relation(fields: [courseId], references: [id])
+
+  lessons Lesson[]
+}
+
+model Lesson {
+  id       Int     @id @default(autoincrement())
+  title    String
+  content  String
+  moduleId Int
+  module   Module  @relation(fields: [moduleId], references: [id])
 }
